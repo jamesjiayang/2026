@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "McpClientApp (SSE)",
+            "request": "launch",
+            "mainClass": "com.example.mcprest.McpClientApp",
+            "projectName": "mcp-rest-system"
+        },
+        {
+            "type": "java",
+            "name": "McpClientApp (STDIO)",
+            "request": "launch",
+            "mainClass": "com.example.mcprest.McpClientApp",
+            "projectName": "mcp-rest-system",
+            "args": [
+                "--stdio"
+            ]
+        },
+        {
+            "type": "java",
+            "name": "McpRestApplication (Default/SSE)",
+            "request": "launch",
+            "mainClass": "com.example.mcprest.McpRestApplication",
+            "projectName": "mcp-rest-system"
+        },
+        {
+            "type": "java",
+            "name": "McpRestApplication (STDIO)",
+            "request": "launch",
+            "mainClass": "com.example.mcprest.McpRestApplication",
+            "projectName": "mcp-rest-system",
+            "args": [
+                "--spring.profiles.active=stdio"
+            ]
+        }
+    ]
+}

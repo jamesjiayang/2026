@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Camel ActiveMQ Broker",
+            "request": "launch",
+            "mainClass": "com.example.camelmq.BrokerApp",
+            "projectName": "camel-activemq-demo"
+        },
+        {
+            "type": "java",
+            "name": "Camel ActiveMQ Producer",
+            "request": "launch",
+            "mainClass": "com.example.camelmq.ProducerApp",
+            "projectName": "camel-activemq-demo"
+        },
+        {
+            "type": "java",
+            "name": "Camel ActiveMQ Consumer",
+            "request": "launch",
+            "mainClass": "com.example.camelmq.ConsumerApp",
+            "projectName": "camel-activemq-demo"
+        }
+    ]
+}

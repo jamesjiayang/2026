@@ -1,0 +1,5 @@
+com\example\camelmq\BrokerApp.class
+com\example\camelmq\ConsumerApp$1.class
+com\example\camelmq\ConsumerApp.class
+com\example\camelmq\ProducerApp$1.class
+com\example\camelmq\ProducerApp.class
