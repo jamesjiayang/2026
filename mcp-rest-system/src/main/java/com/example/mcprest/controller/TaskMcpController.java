@@ -29,14 +29,19 @@ public class TaskMcpController {
         return taskRepository.save(task);
     }
 
-    @Tool(description = "Delete a task from the system by its unique ID")
+    @Tool(description = "Delete a task from the system by its unique integer ID")
     public String deleteTask(
-            @ToolParam(description = "The unique ID of the task to delete") Long id) {
-        boolean deleted = taskRepository.deleteById(id);
-        if (deleted) {
-            return "Task with ID " + id + " was successfully deleted.";
-        } else {
-            return "Task with ID " + id + " was not found.";
+            @ToolParam(description = "The unique integer ID of the task to delete (e.g. 1, 2)") String id) {
+        try {
+            long taskId = (long) Double.parseDouble(id.trim());
+            boolean deleted = taskRepository.deleteById(taskId);
+            if (deleted) {
+                return "Task with ID " + taskId + " was successfully deleted.";
+            } else {
+                return "Task with ID " + taskId + " was not found.";
+            }
+        } catch (NumberFormatException e) {
+            return "Invalid task ID format: " + id;
         }
     }
 }

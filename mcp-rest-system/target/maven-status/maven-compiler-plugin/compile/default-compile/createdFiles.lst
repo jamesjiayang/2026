@@ -1,7 +1,7 @@
-com\example\mcprest\McpRestApplication.class
-com\example\mcprest\McpClientApp.class
-com\example\mcprest\repository\TaskRepository.class
-com\example\mcprest\model\Task.class
-com\example\mcprest\controller\GeminiMcpController.class
-com\example\mcprest\controller\TaskMcpController.class
-com\example\mcprest\controller\TaskRestController.class
+com/example/mcprest/controller/TaskRestController.class
+com/example/mcprest/McpClientApp.class
+com/example/mcprest/McpRestApplication.class
+com/example/mcprest/controller/TaskMcpController.class
+com/example/mcprest/model/Task.class
+com/example/mcprest/controller/GeminiMcpController.class
+com/example/mcprest/repository/TaskRepository.class
