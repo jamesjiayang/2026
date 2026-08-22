@@ -17,8 +17,8 @@ public class TaskMcpController {
     }
 
     @Tool(description = "List all tasks currently tracked by the system")
-    public List<Task> listTasks() {
-        return taskRepository.findAll();
+    public java.util.Map<String, Object> listTasks() {
+        return java.util.Map.of("tasks", taskRepository.findAll());
     }
 
     @Tool(description = "Add a new task to the system")
@@ -30,18 +30,18 @@ public class TaskMcpController {
     }
 
     @Tool(description = "Delete a task from the system by its unique integer ID")
-    public String deleteTask(
+    public java.util.Map<String, Object> deleteTask(
             @ToolParam(description = "The unique integer ID of the task to delete (e.g. 1, 2)") String id) {
         try {
             long taskId = (long) Double.parseDouble(id.trim());
             boolean deleted = taskRepository.deleteById(taskId);
             if (deleted) {
-                return "Task with ID " + taskId + " was successfully deleted.";
+                return java.util.Map.of("success", true, "message", "Task with ID " + taskId + " was successfully deleted.");
             } else {
-                return "Task with ID " + taskId + " was not found.";
+                return java.util.Map.of("success", false, "message", "Task with ID " + taskId + " was not found.");
             }
         } catch (NumberFormatException e) {
-            return "Invalid task ID format: " + id;
+            return java.util.Map.of("success", false, "message", "Invalid task ID format: " + id);
         }
     }
 }
