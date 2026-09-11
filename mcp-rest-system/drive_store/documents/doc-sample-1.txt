@@ -1,0 +1,23 @@
+# Distributed Systems Fundamentals
+
+A distributed system is a collection of autonomous computing entities that communicate over a network
+and coordinate their actions by passing messages to achieve a common goal.
+
+## Key Concepts
+1. CAP Theorem: Formulated by Eric Brewer, it states that any distributed data store can only provide
+   at most two of the following three guarantees:
+   - Consistency: Every read receives the most recent write or an error.
+   - Availability: Every request receives a non-error response, without guarantee that it contains the most recent write.
+   - Partition Tolerance: The system continues to operate despite an arbitrary number of messages being dropped or delayed by the network.
+   In network partitions (which are inevitable), a distributed system must choose between Consistency (CP) and Availability (AP).
+
+2. Raft Consensus Algorithm:
+   Raft is a consensus algorithm designed to be understandable and fault-tolerant.
+   It decomposes consensus into three subproblems: Leader Election, Log Replication, and Safety.
+   A node in Raft can be in one of three states: Follower, Candidate, or Leader.
+   Leaders send periodic Heartbeats (AppendEntries RPCs with no log entries) to maintain authority.
+
+3. Spaced Repetition and Leitner Box System:
+   The Leitner system uses flashcards sorted into boxes based on learner mastery.
+   Cards correctly answered move to higher boxes with exponential review intervals.
+   Cards answered incorrectly are sent back to Box 1 for immediate review.

@@ -1,0 +1,13 @@
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\model\DocumentResponse.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\service\GoogleDriveStorageServiceImpl.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\FlashcardDataApplication.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\model\SyncResponse.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\model\SyncRequest.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\controller\DocumentController.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\service\DriveStorageService.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\service\LocalDriveSimulatorServiceImpl.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\model\Flashcard.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\controller\DeckController.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\service\DeckService.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\model\Deck.java
+C:\dev\source\2026\flashcard-system\java-data-service\src\main\java\com\example\flashcards\service\StorageManager.java

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.example.flashcards.service.DeckServiceTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.275 s -- in com.example.flashcards.service.DeckServiceTest

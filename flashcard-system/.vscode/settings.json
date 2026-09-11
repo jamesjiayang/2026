@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "./python-client/venv/Scripts/python.exe",
+    "python.analysis.extraPaths": [
+        "./python-client",
+        "./python-client/venv/Lib/site-packages"
+    ]
+}

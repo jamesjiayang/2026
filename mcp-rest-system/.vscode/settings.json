@@ -1,4 +1,9 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "python.defaultInterpreterPath": "C:/dev/source/2026/flashcard-system/python-client/venv/Scripts/python.exe",
+    "python.analysis.extraPaths": [
+        "C:/dev/source/2026/flashcard-system/python-client",
+        "C:/dev/source/2026/flashcard-system/python-client/venv/Lib/site-packages"
+    ]
 }
