@@ -86,3 +86,39 @@ class JavaDataServiceClient:
             raise RuntimeError(f"Failed to fetch master deck from Java service: {resp.status_code} - {resp.text}")
 
         return Deck(**resp.json())
+
+    def trigger_backup(self) -> dict:
+        """
+        Calls Java service: POST /api/deck/backup
+        Exports SQLite master deck snapshot to Google Drive backup target.
+        """
+        url = f"{self.base_url}/api/deck/backup"
+        logger.info(f"Triggering backup to Google Drive target: {url}")
+        resp = self.session.post(url, timeout=15)
+        if resp.status_code != 200:
+            raise RuntimeError(f"Backup failed: {resp.status_code} - {resp.text}")
+        return resp.json()
+
+    def trigger_restore(self) -> dict:
+        """
+        Calls Java service: POST /api/deck/restore
+        Restores SQLite master deck from Google Drive backup target.
+        """
+        url = f"{self.base_url}/api/deck/restore"
+        logger.info(f"Triggering restore from Google Drive target: {url}")
+        resp = self.session.post(url, timeout=15)
+        if resp.status_code != 200:
+            raise RuntimeError(f"Restore failed: {resp.status_code} - {resp.text}")
+        return resp.json()
+
+    def fetch_storage_status(self) -> dict:
+        """
+        Calls Java service: GET /api/deck/status
+        Retrieves storage engine telemetry (SQLite file, card count, Google Drive status).
+        """
+        url = f"{self.base_url}/api/deck/status"
+        resp = self.session.get(url, timeout=5)
+        if resp.status_code != 200:
+            raise RuntimeError(f"Failed to fetch storage status: {resp.status_code} - {resp.text}")
+        return resp.json()
+

@@ -32,10 +32,10 @@ RESET = "\033[0m"
 
 def print_banner():
     banner = f"""
-{CYAN}{BOLD}╔═══════════════════════════════════════════════════════════════════╗
-║         POLYGLOT FLASHCARD SYSTEM (Python + Java + AI)            ║
-║     LangGraph AI Machine  ◄───REST API───►  Java Drive Guardian   ║
-╚═══════════════════════════════════════════════════════════════════╝{RESET}
+{CYAN}{BOLD}╔════════════════════════════════════════════════════════════════════════════╗
+║             POLYGLOT FLASHCARD SYSTEM (Python + Java + SQLite)             ║
+║  AI LangGraph ◄──► SQLite (Local Transactional DB) ◄──► GDrive Docs/Backup ║
+╚════════════════════════════════════════════════════════════════════════════╝{RESET}
 """
     print(banner)
 
@@ -176,6 +176,49 @@ def view_deck_status(java_client: JavaDataServiceClient):
         print(f"{RED}Failed to fetch deck status: {e}{RESET}")
 
 
+def manage_storage_and_backup(java_client: JavaDataServiceClient):
+    print(f"\n{CYAN}{BOLD}=== 💾 Storage & Backup Management (SQLite & Google Drive) ==={RESET}")
+    try:
+        status = java_client.fetch_storage_status()
+        print(f"\n{BOLD}Architecture Status:{RESET}")
+        print(f"  • Transactional DB       : {GREEN}{status.get('transactional_database', 'SQLite')}{RESET}")
+        print(f"  • SQLite Database File   : {DIM}{status.get('sqlite_file')}{RESET}")
+        print(f"  • Total Deck Cards       : {BOLD}{status.get('total_cards')}{RESET}")
+        print(f"  • Master Deck Version    : {status.get('deck_version')}")
+        print(f"  • Last Synchronized      : {status.get('last_synced') or 'Never'}")
+        print(f"  • Backup Target          : {CYAN}{status.get('backup_target')}{RESET}")
+        print(f"  • Document Store         : {CYAN}{status.get('unstructured_document_store')}{RESET}")
+        print(f"  • Auto-Sync Backup       : {GREEN if status.get('auto_sync_backup') else YELLOW}{status.get('auto_sync_backup')}{RESET}")
+    except Exception as e:
+        print(f"{RED}Failed to fetch storage status: {e}{RESET}")
+        return
+
+    print(f"\n{BOLD}Actions:{RESET}")
+    print(f"  {CYAN}1.{RESET} 📤 Export Snapshot to Google Drive Backup Target (POST /api/deck/backup)")
+    print(f"  {CYAN}2.{RESET} 📥 Restore SQLite Database from Google Drive Backup Target (POST /api/deck/restore)")
+    print(f"  {CYAN}3.{RESET} ↩ Return to Main Menu")
+
+    action = input(f"\n{BOLD}Select an action [1-3]:{RESET} ").strip()
+    if action == "1":
+        print(f"{DIM}Exporting snapshot to Google Drive backup target...{RESET}")
+        try:
+            res = java_client.trigger_backup()
+            print(f"{GREEN}✓ Backup Succeeded!{RESET} Backed up {BOLD}{res.get('card_count')}{RESET} cards to Google Drive target.")
+        except Exception as e:
+            print(f"{RED}[ERROR] Backup failed: {e}{RESET}")
+    elif action == "2":
+        confirm = input(f"{YELLOW}Warning: This will overwrite local SQLite cards with backup state. Proceed? (y/N): {RESET}").strip().lower()
+        if confirm == 'y':
+            print(f"{DIM}Restoring from Google Drive backup target...{RESET}")
+            try:
+                res = java_client.trigger_restore()
+                print(f"{GREEN}✓ Restore Succeeded!{RESET} Restored {BOLD}{res.get('restored_card_count')}{RESET} cards into SQLite.")
+            except Exception as e:
+                print(f"{RED}[ERROR] Restore failed: {e}{RESET}")
+        else:
+            print("Restore cancelled.")
+
+
 def main():
     print_banner()
     java_client = JavaDataServiceClient()
@@ -188,9 +231,10 @@ def main():
         print(f"  {CYAN}1.{RESET} 📄 Generate Cards from Document {DIM}(Workflow 1: Generation Graph){RESET}")
         print(f"  {CYAN}2.{RESET} 🧠 Start Study Session          {DIM}(Workflow 2: Study Session Graph){RESET}")
         print(f"  {CYAN}3.{RESET} 📊 View Master Deck Status      {DIM}(Leitner Distribution & Due Count){RESET}")
-        print(f"  {CYAN}4.{RESET} 🚪 Exit")
+        print(f"  {CYAN}4.{RESET} 💾 Storage & Backup Management  {DIM}(SQLite & Google Drive Architecture){RESET}")
+        print(f"  {CYAN}5.{RESET} 🚪 Exit")
 
-        choice = input(f"\n{BOLD}Select an option [1-4]:{RESET} ").strip()
+        choice = input(f"\n{BOLD}Select an option [1-5]:{RESET} ").strip()
 
         if choice == "1":
             run_generation_workflow(java_client, tutor)
@@ -199,11 +243,14 @@ def main():
         elif choice == "3":
             view_deck_status(java_client)
         elif choice == "4":
+            manage_storage_and_backup(java_client)
+        elif choice == "5":
             print(f"\n{CYAN}Goodbye! Happy learning!{RESET}\n")
             break
         else:
-            print(f"{RED}Invalid option, please choose between 1 and 4.{RESET}")
+            print(f"{RED}Invalid option, please choose between 1 and 5.{RESET}")
 
 
 if __name__ == "__main__":
     main()
+

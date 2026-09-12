@@ -1,10 +1,6 @@
 com\example\flashcards\service\LocalDriveSimulatorServiceImpl.class
 com\example\flashcards\service\GoogleDriveStorageServiceImpl.class
-com\example\flashcards\controller\DeckController$1.class
-com\example\flashcards\controller\DeckController.class
 com\example\flashcards\controller\DocumentController$ErrorResponse.class
-com\example\flashcards\controller\DeckController$2.class
-com\example\flashcards\controller\DeckController$ErrorResponse.class
 com\example\flashcards\model\Flashcard.class
 com\example\flashcards\service\StorageManager.class
 com\example\flashcards\model\Deck.class

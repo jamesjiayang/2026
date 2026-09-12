@@ -99,11 +99,36 @@ def run_e2e_tests():
     print(f"       Incorrect count     : {study_result.get('incorrect_count')}")
     print(f"       Java Sync Result    : {study_sync.get('status')}")
 
-    # Step 5: Verify Reconciliation on Master Deck
-    print("\n[Step 5] Verifying Master Deck persistence and POJO state...")
+    # Step 5: Verify Reconciliation on Master Deck in SQLite
+    print("\n[Step 5] Verifying Master Deck persistence and POJO state in SQLite...")
     deck = java_client.fetch_master_deck()
     assert len(deck.cards) >= len(final_cards), "Deck card count does not reflect merged cards"
-    print(f"  [OK] Master Deck currently has {len(deck.cards)} cards. Version: {deck.version}")
+    print(f"  [OK] Master Deck in SQLite currently has {len(deck.cards)} cards. Version: {deck.version}")
+
+    # Step 6: Verify Architecture Telemetry (SQLite + Google Drive)
+    print("\n[Step 6] Verifying SQLite Engine Telemetry & Google Drive targets...")
+    status = java_client.fetch_storage_status()
+    assert status.get("transactional_database") == "SQLite", "Expected SQLite as transactional database"
+    assert status.get("total_cards") == len(deck.cards), "Status card count mismatch"
+    assert "backup_target" in status, "Missing backup_target in status"
+    assert "unstructured_document_store" in status, "Missing unstructured_document_store in status"
+    print(f"  [OK] Transactional DB: {status.get('transactional_database')} ({status.get('sqlite_file')})")
+    print(f"       Backup Target   : {status.get('backup_target')}")
+    print(f"       Document Store  : {status.get('unstructured_document_store')}")
+
+    # Step 7: Verify Backup & Restore Cycle with Google Drive Target
+    print("\n[Step 7] Testing Backup & Restore Lifecycle with Google Drive target...")
+    backup_res = java_client.trigger_backup()
+    assert backup_res.get("status") == "SUCCESS", f"Backup failed: {backup_res}"
+    assert backup_res.get("card_count") == len(deck.cards), "Backup card count mismatch"
+    print(f"  [OK] Successfully exported {backup_res.get('card_count')} cards to Google Drive backup target.")
+
+    restore_res = java_client.trigger_restore()
+    assert restore_res.get("status") == "SUCCESS", f"Restore failed: {restore_res}"
+    assert restore_res.get("restored_card_count") == len(deck.cards), "Restore card count mismatch"
+    restored_deck = java_client.fetch_master_deck()
+    assert len(restored_deck.cards) == len(deck.cards), "Restored deck count mismatch"
+    print(f"  [OK] Successfully restored SQLite database from Google Drive target ({len(restored_deck.cards)} cards).")
 
     print("\n" + "=" * 70)
     print("      ALL END-TO-END INTEGRATION TESTS PASSED SUCCESSFULLY!         ")
@@ -112,3 +137,4 @@ def run_e2e_tests():
 
 if __name__ == "__main__":
     run_e2e_tests()
+

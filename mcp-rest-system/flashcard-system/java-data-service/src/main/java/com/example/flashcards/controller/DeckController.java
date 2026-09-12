@@ -48,7 +48,7 @@ public class DeckController {
         try {
             List<Flashcard> dueCards = deckService.getDueCards();
             return ResponseEntity.ok(dueCards);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Failed to retrieve due cards: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("Failed to read deck from storage", e.getMessage()));
@@ -108,10 +108,53 @@ public class DeckController {
         try {
             Deck deck = deckService.getMasterDeck();
             return ResponseEntity.ok(deck);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("Failed to read deck", e.getMessage()));
         }
+    }
+
+    /**
+     * POST /api/deck/backup
+     * Triggers an immediate export/backup of the current SQLite master deck to Google Drive target.
+     */
+    @PostMapping("/backup")
+    public ResponseEntity<?> backupToDrive() {
+        log.info("Received request to backup SQLite deck to Google Drive target.");
+        try {
+            var result = deckService.backupToDrive();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Backup failed: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("Backup failed", e.getMessage()));
+        }
+    }
+
+    /**
+     * POST /api/deck/restore
+     * Restores local SQLite master deck from Google Drive backup target.
+     */
+    @PostMapping("/restore")
+    public ResponseEntity<?> restoreFromDrive() {
+        log.info("Received request to restore SQLite deck from Google Drive backup target.");
+        try {
+            var result = deckService.restoreFromDrive();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Restore failed: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("Restore failed", e.getMessage()));
+        }
+    }
+
+    /**
+     * GET /api/deck/status
+     * Returns storage engine telemetry (SQLite file, card count, Google Drive status).
+     */
+    @GetMapping("/status")
+    public ResponseEntity<?> getStorageStatus() {
+        return ResponseEntity.ok(deckService.getStorageStatus());
     }
 
     public record ErrorResponse(String error, String message) {}

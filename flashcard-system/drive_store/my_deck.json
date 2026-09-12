@@ -1,0 +1,79 @@
+{
+  "deck_id" : "master-deck",
+  "name" : "CS & Distributed Systems",
+  "version" : 3,
+  "last_synced" : "2026-09-12T15:28:59.509090100Z",
+  "cards" : [ {
+    "id" : "75983618-81b5-4933-9529-713234da8331",
+    "question" : "Define or explain Distributed Systems Fundamentals:",
+    "answer" : "A distributed system is a collection of autonomous computing entities that communicate over a network",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "b37d3a84-6dd2-461e-acee-2a89fef06614",
+    "question" : "Define or explain Key Concepts:",
+    "answer" : "1. CAP Theorem: Formulated by Eric Brewer, it states that any distributed data store can only provide",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "c73d63b5-c4a7-4eb4-bfc6-12cbedfa5078",
+    "question" : "What is CAP Theorem?",
+    "answer" : "Formulated by Eric Brewer, it states that any distributed data store can only provide",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "da50a072-8488-4a09-b35d-460f43d19f1a",
+    "question" : "What is Consistency?",
+    "answer" : "Every read receives the most recent write or an error.",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "da9ec176-84c7-4ea4-86e5-404cfcbe6b40",
+    "question" : "What is Availability?",
+    "answer" : "Every request receives a non-error response, without guarantee that it contains the most recent write.",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "bbf7c73c-ca82-4d38-a186-b03df41f138a",
+    "question" : "What three guarantees are contrasted in the CAP Theorem?",
+    "answer" : "Consistency, Availability, and Partition Tolerance (a system can satisfy at most two in the presence of network partitions).",
+    "box_number" : 2,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-15",
+    "tags" : [ "distributed-systems", "cap-theorem" ],
+    "source_document_id" : null
+  }, {
+    "id" : "8ea04c10-0c98-44d6-89c9-af416b0709fc",
+    "question" : "What happens to a flashcard in the Leitner system when answered incorrectly?",
+    "answer" : "It is demoted back to Box 1 for immediate daily review.",
+    "box_number" : 3,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-17",
+    "tags" : [ "learning-theory", "leitner" ],
+    "source_document_id" : null
+  }, {
+    "id" : "0ac83c00-0c36-4583-9307-890c97b78903",
+    "question" : "What are the three possible states of a node in the Raft consensus algorithm?",
+    "answer" : "Follower, Candidate, and Leader.",
+    "box_number" : 3,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-19",
+    "tags" : [ "raft", "consensus" ],
+    "source_document_id" : null
+  } ]
+}
