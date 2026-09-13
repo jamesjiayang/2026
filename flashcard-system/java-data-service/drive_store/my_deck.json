@@ -1,9 +1,99 @@
 {
   "deck_id" : "master-deck",
   "name" : "CS & Distributed Systems",
-  "version" : 7,
-  "last_synced" : "2026-09-12T21:00:00.252429800Z",
+  "version" : 11,
+  "last_synced" : "2026-09-13T03:44:04.728988400Z",
   "cards" : [ {
+    "id" : "3450776c-d9ef-4ce7-88d7-f92f6ad16d89",
+    "question" : "Define or explain Distributed Systems Fundamentals:",
+    "answer" : "A distributed system is a collection of autonomous computing entities that communicate over a network",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "5dbc22b8-b32c-4ab6-a0d6-c94de8ce1414",
+    "question" : "Define or explain Key Concepts:",
+    "answer" : "1. CAP Theorem: Formulated by Eric Brewer, it states that any distributed data store can only provide",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "4c4120e8-6369-4140-937c-deceff9d2da4",
+    "question" : "What is CAP Theorem?",
+    "answer" : "Formulated by Eric Brewer, it states that any distributed data store can only provide",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "6e7fc1af-e8db-4018-aa7e-6c71f06bfbd3",
+    "question" : "What is Consistency?",
+    "answer" : "Every read receives the most recent write or an error.",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "623ea8b6-6dfb-4699-b5c1-95005c1efe5d",
+    "question" : "What is Availability?",
+    "answer" : "Every request receives a non-error response, without guarantee that it contains the most recent write.",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "d5579689-3d6d-4133-9f6b-32c81604443c",
+    "question" : "Define or explain Polyglot Flashcard System (Python + Java + SQLite + Google Drive):",
+    "answer" : "A production-grade, distributed flashcard learning system implementing a standard **Local-First Architectural Pattern**:",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "README", "reviewed" ],
+    "source_document_id" : "README"
+  }, {
+    "id" : "9fc667b9-5643-4458-aa25-1a86dd8c54e4",
+    "question" : "What is **Presentation Layer (Python CLI)**?",
+    "answer" : "Interactive command-line interface with spaced-repetition study sessions, progress metrics, and storage/backup management.",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "README", "reviewed" ],
+    "source_document_id" : "README"
+  }, {
+    "id" : "b2ab02ad-47ba-49d9-b1d4-720b5c2ff5c2",
+    "question" : "What is **Processing Layer (Python & LangGraph)**?",
+    "answer" : "AI state machines utilizing **LangGraph** and **Google Gemini** for automated card generation, review, and dynamic spaced-repetition evaluation.",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "README", "reviewed" ],
+    "source_document_id" : "README"
+  }, {
+    "id" : "b17ba576-ffb9-450d-998e-d57155143ded",
+    "question" : "What is **Local Transactional Database (SQLite)**?",
+    "answer" : "High-speed, embedded relational database (`./flashcards.db`) providing ACID consistency, sub-millisecond study session queries, and indexed due-date filtering (`WHERE next_review_date <= today`).",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "README", "reviewed" ],
+    "source_document_id" : "README"
+  }, {
+    "id" : "d40c09d7-f053-4b13-8220-49a86ca0df15",
+    "question" : "What is **Unstructured Document Store (Google Drive)**?",
+    "answer" : "Cloud object store housing raw unstructured documents (notes, Markdown files, PDFs, Google Docs) consumed by the LangGraph card generation pipeline.",
+    "box_number" : 1,
+    "last_reviewed" : null,
+    "next_review_date" : "2026-09-12",
+    "tags" : [ "extracted", "README", "reviewed" ],
+    "source_document_id" : "README"
+  }, {
     "id" : "eeb4200b-0157-45cd-a732-101c27309f15",
     "question" : "Define or explain Distributed Systems Fundamentals:",
     "answer" : "A distributed system is a collection of autonomous computing entities that communicate over a network",
@@ -131,6 +221,51 @@
     "source_document_id" : "doc-sample-1"
   }, {
     "id" : "1205e761-ad3c-4e47-9a52-ede1dda6b3e9",
+    "question" : "What is Availability?",
+    "answer" : "Every request receives a non-error response, without guarantee that it contains the most recent write.",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "667ceade-f421-489f-a94b-36ddcf21f7dc",
+    "question" : "Define or explain Distributed Systems Fundamentals:",
+    "answer" : "A distributed system is a collection of autonomous computing entities that communicate over a network",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "b563dbff-5801-4f51-8784-1b30f8d57560",
+    "question" : "Define or explain Key Concepts:",
+    "answer" : "1. CAP Theorem: Formulated by Eric Brewer, it states that any distributed data store can only provide",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "afdbb937-547e-45da-8ff7-7571b863549e",
+    "question" : "What is CAP Theorem?",
+    "answer" : "Formulated by Eric Brewer, it states that any distributed data store can only provide",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "7d4e07b0-de92-40c7-83b2-0466e1947673",
+    "question" : "What is Consistency?",
+    "answer" : "Every read receives the most recent write or an error.",
+    "box_number" : 1,
+    "last_reviewed" : "2026-09-12",
+    "next_review_date" : "2026-09-13",
+    "tags" : [ "extracted", "doc-sample-1", "reviewed" ],
+    "source_document_id" : "doc-sample-1"
+  }, {
+    "id" : "e9126c0e-c43f-4b43-a62e-35038ccd23d9",
     "question" : "What is Availability?",
     "answer" : "Every request receives a non-error response, without guarantee that it contains the most recent write.",
     "box_number" : 1,

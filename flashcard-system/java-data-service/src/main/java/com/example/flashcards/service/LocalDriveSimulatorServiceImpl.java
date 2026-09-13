@@ -132,14 +132,9 @@ public class LocalDriveSimulatorServiceImpl implements DriveStorageService {
 
     @Override
     public DocumentResponse getDocument(String documentId) throws IOException {
-        Path docsDir = Path.of(storeDir, "documents");
-        // Try exact filename first, then with .txt extension
-        Path filePath = docsDir.resolve(documentId);
-        if (!Files.exists(filePath)) {
-            filePath = docsDir.resolve(documentId + ".txt");
-        }
+        Path filePath = findDocumentPath(documentId);
 
-        if (!Files.exists(filePath)) {
+        if (filePath == null || !Files.exists(filePath)) {
             throw new IOException("Document not found in drive store: " + documentId);
         }
 
@@ -147,10 +142,38 @@ public class LocalDriveSimulatorServiceImpl implements DriveStorageService {
         return new DocumentResponse(documentId, filePath.getFileName().toString(), content, "text/plain");
     }
 
+    private Path findDocumentPath(String documentId) {
+        List<Path> searchDirs = List.of(
+                Path.of(storeDir, "documents"),
+                Path.of("..", storeDir, "documents"),
+                Path.of("../drive_store/documents"),
+                Path.of("./drive_store/documents")
+        );
+
+        for (Path dir : searchDirs) {
+            if (!Files.exists(dir)) {
+                continue;
+            }
+            Path direct = dir.resolve(documentId);
+            if (Files.exists(direct) && Files.isRegularFile(direct)) {
+                return direct;
+            }
+            Path withTxt = dir.resolve(documentId + ".txt");
+            if (Files.exists(withTxt) && Files.isRegularFile(withTxt)) {
+                return withTxt;
+            }
+            Path withMd = dir.resolve(documentId + ".md");
+            if (Files.exists(withMd) && Files.isRegularFile(withMd)) {
+                return withMd;
+            }
+        }
+        return null;
+    }
+
     @Override
     public Deck readDeck() throws IOException {
-        Path deckPath = Path.of(storeDir, "my_deck.json");
-        if (!Files.exists(deckPath)) {
+        Path deckPath = resolveDeckPath();
+        if (deckPath == null || !Files.exists(deckPath)) {
             return createSeedDeck();
         }
         return objectMapper.readValue(deckPath.toFile(), Deck.class);
@@ -158,10 +181,28 @@ public class LocalDriveSimulatorServiceImpl implements DriveStorageService {
 
     @Override
     public void writeDeck(Deck deck) throws IOException {
-        Path deckPath = Path.of(storeDir, "my_deck.json");
+        Path deckPath = resolveDeckPath();
+        if (deckPath == null) {
+            deckPath = Path.of(storeDir, "my_deck.json");
+        }
         Files.createDirectories(deckPath.getParent());
         objectMapper.writeValue(deckPath.toFile(), deck);
         log.info("Successfully updated {} with {} cards", deckPath.toAbsolutePath(), deck.getCards().size());
+    }
+
+    private Path resolveDeckPath() {
+        List<Path> candidatePaths = List.of(
+                Path.of(storeDir, "my_deck.json"),
+                Path.of("..", storeDir, "my_deck.json"),
+                Path.of("../drive_store/my_deck.json"),
+                Path.of("./drive_store/my_deck.json")
+        );
+        for (Path p : candidatePaths) {
+            if (Files.exists(p)) {
+                return p;
+            }
+        }
+        return Path.of(storeDir, "my_deck.json");
     }
 
     @Override

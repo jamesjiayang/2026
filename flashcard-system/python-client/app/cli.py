@@ -54,7 +54,16 @@ def check_java_service(client: JavaDataServiceClient) -> bool:
 
 def run_generation_workflow(java_client: JavaDataServiceClient, tutor: GeminiTutor):
     print(f"\n{CYAN}{BOLD}=== Workflow 1: The Generation Graph ==={RESET}")
-    doc_id = input(f"Enter Document ID to retrieve [default: doc-sample-1]: ").strip()
+    
+    docs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "drive_store", "documents"))
+    if os.path.isdir(docs_dir):
+        files = [f for f in os.listdir(docs_dir) if os.path.isfile(os.path.join(docs_dir, f))]
+        if files:
+            print(f"{DIM}Available documents in local store (drive_store/documents):{RESET}")
+            for f in files:
+                print(f"  • {GREEN}{f}{RESET}")
+
+    doc_id = input(f"\nEnter Document ID or filename to retrieve [default: doc-sample-1]: ").strip()
     if not doc_id:
         doc_id = "doc-sample-1"
 
