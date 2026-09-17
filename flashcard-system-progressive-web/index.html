@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="description" content="Cross-platform Leitner Spaced Repetition Flashcard System with Google Drive Cloud Sync and Gemini AI.">
+  <meta name="theme-color" content="#080b11">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Flashcards AI">
+
+  <title>Polyglot Flashcard System | Leitner Spaced Repetition PWA</title>
+
+  <!-- PWA Web App Manifest -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon-192.svg">
+  <link rel="apple-touch-icon" href="./icons/icon-192.svg">
+
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Google Identity Services for Drive OAuth -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./css/styles.css?v=17">
+</head>
+<body>
+
+  <!-- Sticky Glassmorphic Header -->
+  <header class="app-header">
+    <div class="brand-container">
+      <img src="./icons/icon-192.svg" alt="Flashcards Logo" class="brand-logo">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <h1 class="brand-title">Flashcard AI</h1>
+          <span class="brand-badge">PWA</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Navigation Tabs -->
+    <nav class="nav-tabs" aria-label="Main Navigation">
+      <button class="nav-tab active" data-tab="study" id="nav-tab-study">
+        <span>🧠 Study</span>
+        <span class="badge" id="study-tab-badge">0</span>
+      </button>
+      <button class="nav-tab" data-tab="deck" id="nav-tab-deck">
+        <span>📊 Deck Manager</span>
+      </button>
+      <button class="nav-tab" data-tab="ai" id="nav-tab-ai">
+        <span>🪄 AI Generator</span>
+      </button>
+      <button class="nav-tab" data-tab="settings" id="nav-tab-settings">
+        <span>⚙️ Settings & Sync</span>
+      </button>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="header-controls">
+      <div class="cloud-pill offline" id="cloud-pill" title="Click to configure Cloud Sync">
+        <span class="cloud-dot"></span>
+        <span id="cloud-text">Offline Mode</span>
+      </div>
+      <button class="icon-btn" id="theme-toggle-btn" title="Toggle Dark/Light Mode">☀️</button>
+      <button class="icon-btn" id="btn-open-settings" title="Settings & Drive Sync">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Main Application Container -->
+  <main class="app-main">
+
+    <!-- Leitner Overview Dashboard Bar -->
+    <section class="leitner-bar" aria-label="Deck Overview Statistics">
+      <div class="leitner-stat-group">
+        <div class="stat-item">
+          <span class="stat-label">Total Cards</span>
+          <span class="stat-value" id="stat-total-cards">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Due Today</span>
+          <span class="stat-value due-highlight" id="stat-due-cards">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Mastery Rate</span>
+          <span class="stat-value" id="stat-mastery">0%</span>
+        </div>
+      </div>
+
+      <!-- Leitner 5-Box Distribution Meter -->
+      <div class="leitner-boxes-meter">
+        <div class="meter-box box-1" title="Box 1: Daily review (1 day)">
+          <span class="meter-caption">Box 1</span>
+          <div class="meter-pill"><div class="meter-fill" id="meter-fill-1" style="width: 0%;"></div></div>
+          <span class="meter-caption" id="meter-count-1">0</span>
+        </div>
+        <div class="meter-box box-2" title="Box 2: Every 3 days">
+          <span class="meter-caption">Box 2</span>
+          <div class="meter-pill"><div class="meter-fill" id="meter-fill-2" style="width: 0%;"></div></div>
+          <span class="meter-caption" id="meter-count-2">0</span>
+        </div>
+        <div class="meter-box box-3" title="Box 3: Weekly review (7 days)">
+          <span class="meter-caption">Box 3</span>
+          <div class="meter-pill"><div class="meter-fill" id="meter-fill-3" style="width: 0%;"></div></div>
+          <span class="meter-caption" id="meter-count-3">0</span>
+        </div>
+        <div class="meter-box box-4" title="Box 4: Bi-weekly review (14 days)">
+          <span class="meter-caption">Box 4</span>
+          <div class="meter-pill"><div class="meter-fill" id="meter-fill-4" style="width: 0%;"></div></div>
+          <span class="meter-caption" id="meter-count-4">0</span>
+        </div>
+        <div class="meter-box box-5" title="Box 5: Monthly review (30 days)">
+          <span class="meter-caption">Box 5</span>
+          <div class="meter-pill"><div class="meter-fill" id="meter-fill-5" style="width: 0%;"></div></div>
+          <span class="meter-caption" id="meter-count-5">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 1: STUDY SESSION VIEW
+         ====================================================================== -->
+    <section class="tab-content active" id="tab-study">
+      <div class="study-viewport" id="study-viewport">
+        
+        <!-- Study Progress Header -->
+        <div class="study-progress-bar">
+          <div class="study-progress-info">
+            <span id="study-counter">Card 1 of 5</span>
+            <span class="box-pill b-1" id="study-box-badge">Box 1</span>
+            <span class="study-flip-hint">Space / Click to Flip</span>
+          </div>
+          <div class="study-card-tools">
+            <button type="button" class="btn-study-tool" id="btn-study-sync" title="Sync deck changes with Google Drive (Shortcut: S)">
+              <span class="sync-icon">🔄</span>
+              <span class="tool-label">Sync</span>
+            </button>
+            <button type="button" class="btn-study-tool danger" id="btn-study-delete" title="Delete this flashcard from deck (Shortcut: Del)">
+              <span>🗑️</span>
+              <span class="tool-label">Delete</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3D Perspective Card Flip Container -->
+        <div class="flip-card-wrapper" id="flip-card-wrapper" role="button" tabindex="0" aria-label="Flashcard. Click or press Space to flip.">
+          <div class="flip-card-inner">
+            <!-- Front Face (Question) -->
+            <div class="card-face card-face-front">
+              <div class="card-top-row">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">QUESTION</span>
+                  <span class="category-breadcrumb-pill" id="study-category-badge-front">📁 General</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div class="card-tag-list" id="study-tags-front"></div>
+                  <button type="button" class="btn-card-quick-delete" id="btn-card-delete-front" title="Delete this flashcard from deck (Del)">🗑️</button>
+                </div>
+              </div>
+              <div class="card-main-text" id="study-question-text">Loading question...</div>
+              <div class="card-bottom-hint">
+                <span>🔄 Click or Tap card to reveal answer</span>
+              </div>
+            </div>
+
+            <!-- Back Face (Answer) -->
+            <div class="card-face card-face-back">
+              <div class="card-top-row">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-emerald); text-transform: uppercase; letter-spacing: 0.05em;">ANSWER</span>
+                  <span class="category-breadcrumb-pill" id="study-category-badge-back">📁 General</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div class="card-tag-list" id="study-tags-back"></div>
+                  <button type="button" class="btn-card-quick-delete" id="btn-card-delete-back" title="Delete this flashcard from deck (Del)">🗑️</button>
+                </div>
+              </div>
+              <div class="card-main-text" id="study-answer-text">Loading answer...</div>
+              <div class="card-bottom-hint">
+                <span>Next review scheduled for: <strong id="study-next-review">Tomorrow</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Study Actions & Self-Assessment Rating -->
+        <div class="study-actions-container">
+          <div class="leitner-rating-buttons">
+            <button class="btn-rate rate-again" id="btn-rate-again" title="Demote to Box 1 (Shortcut: 1 or A)">
+              <span>❌ Again</span>
+              <span class="rate-sub">Demote to Box 1 (1d)</span>
+            </button>
+            <button class="btn-rate rate-good" id="btn-rate-good" title="Advance to Next Box (Shortcut: 2 or G)">
+              <span>🟡 Good</span>
+              <span class="rate-sub">Advance Box (+Interval)</span>
+            </button>
+            <button class="btn-rate rate-easy" id="btn-rate-easy" title="Fast Track Mastery (Shortcut: 3 or E)">
+              <span>🌟 Easy</span>
+              <span class="rate-sub">Mastered (+2 Intervals)</span>
+            </button>
+          </div>
+
+          <!-- Study Utility Actions: Sync & Delete -->
+          <div class="study-card-actions-bar">
+            <button type="button" class="btn-study-sub" id="btn-study-sync-bottom" title="Sync deck changes to Google Drive (Shortcut: S)">
+              <span class="sync-icon">🔄</span>
+              <span>Sync Deck to Cloud</span>
+            </button>
+            <button type="button" class="btn-study-sub danger" id="btn-study-delete-bottom" title="Permanently delete this card from the deck (Shortcut: Del)">
+              <span>🗑️</span>
+              <span>Delete This Card</span>
+            </button>
+          </div>
+
+          <!-- AI Tutor Recall Evaluator (Optional) -->
+          <div class="ai-tutor-box">
+            <div class="ai-tutor-header">
+              <span>🤖 AI Tutor Recall Test (Google Gemini)</span>
+              <span style="font-size: 0.75rem; color: var(--text-dim);">Optional self-test</span>
+            </div>
+            <textarea class="ai-input" id="ai-student-answer" placeholder="Type your answer in your own words to test your recall..."></textarea>
+            <div class="ai-btn-row">
+              <button class="btn-ai-eval" id="btn-ai-evaluate">
+                <span>✨ Grade with Gemini</span>
+              </button>
+            </div>
+            <div class="ai-feedback-banner" id="ai-feedback-banner">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <strong style="font-size: 0.85rem;">Gemini Tutor Feedback:</strong>
+                <span id="ai-score-badge" style="font-weight: 700; font-size: 0.85rem;">85/100</span>
+              </div>
+              <p id="ai-feedback-text" style="color: var(--text-muted); line-height: 1.4;"></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Empty State when no cards are due -->
+      <div class="empty-due-card" id="empty-due-card" style="display: none;">
+        <span class="empty-icon">🎉</span>
+        <h2 style="font-size: 1.5rem; font-weight: 700;">You're All Caught Up!</h2>
+        <p style="color: var(--text-muted); max-width: 420px;">
+          All flashcards due today have been successfully reviewed. You can generate new cards with AI, or start an extra practice session.
+        </p>
+        <button class="btn-primary" id="btn-study-all" style="margin-top: 0.5rem;">
+          <span>📚 Review All Cards Anyway</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 2: DECK MANAGEMENT & LEITNER BROWSER
+         ====================================================================== -->
+    <section class="tab-content" id="tab-deck">
+      <!-- Breadcrumb Navigation & Back Button Header -->
+      <div class="deck-nav-header">
+        <div class="deck-nav-left">
+          <button class="btn-secondary btn-deck-back" id="deck-btn-back" style="display: none;" title="Go back to previous level">
+            <span>← Back</span>
+          </button>
+          <nav class="deck-breadcrumbs" id="deck-breadcrumbs" aria-label="Deck hierarchy breadcrumb">
+            <!-- Rendered by app.js: e.g. 📁 Categories › 📂 Linux › 📄 Vi Commands -->
+          </nav>
+        </div>
+        <div class="deck-level-stats" id="deck-level-stats">
+          <!-- Stats badge rendered dynamically by app.js -->
+        </div>
+      </div>
+
+      <!-- Contextual Deck Toolbar -->
+      <div class="deck-toolbar">
+        <div class="search-filter-row" style="flex-wrap: wrap; gap: 0.5rem;">
+          <input type="text" class="search-input" id="deck-search-input" placeholder="Search categories..." style="min-width: 220px;">
+          <!-- Hidden compatibility elements for datalist sync -->
+          <select class="form-input" id="deck-category-select" style="display: none;">
+            <option value="all">All Categories</option>
+          </select>
+          <select class="form-input" id="deck-subcategory-select" style="display: none;">
+            <option value="all">All Subcategories</option>
+          </select>
+          <div class="filter-pills" id="deck-box-filter-pills" style="display: none;">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="due">Due</button>
+            <button class="filter-pill" data-filter="1">Box 1</button>
+            <button class="filter-pill" data-filter="2">Box 2</button>
+            <button class="filter-pill" data-filter="3">Box 3</button>
+            <button class="filter-pill" data-filter="4">Box 4</button>
+            <button class="filter-pill" data-filter="5">Box 5</button>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button class="btn-secondary" id="btn-open-batch-delete" title="Manage Categories, Subcategories & Delete Cards">
+            <span>🗂️ Manage & Delete</span>
+          </button>
+          <button class="btn-primary" id="btn-open-add-card">
+            <span>➕ Add Card</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Deck Grid (Categories, Subcategories, or Cards) -->
+      <div class="cards-grid" id="cards-grid">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 3: AI CARD GENERATOR (WORKFLOW 1 PARITY)
+         ====================================================================== -->
+    <section class="tab-content" id="tab-ai">
+      <div class="generator-container">
+        <div class="generator-intro">
+          <h2>🪄 AI Flashcard Generator</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Upload notes, paste educational text, or an article. Google Gemini will extract high-yield conceptual flashcards formatted with the Leitner schema.
+          </p>
+        </div>
+
+        <!-- Category, Subcategory & Label Controls -->
+        <div class="ai-fields-vertical-stack">
+          <!-- 1. Category Line -->
+          <div class="form-group ai-form-line">
+            <label class="form-label" for="ai-category-input">📁 Category</label>
+            <div class="ai-input-combo-row">
+              <input type="text" list="category-datalist" class="form-input" id="ai-category-input" placeholder="e.g. Computer Science (optional)">
+              <select id="ai-category-select" class="form-input ai-combo-select" title="Select previously used category from Google Drive">
+                <option value="">▼ Select existing category...</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 2. Subcategory Line -->
+          <div class="form-group ai-form-line">
+            <label class="form-label" for="ai-subcategory-input">📂 Subcategory</label>
+            <div class="ai-input-combo-row">
+              <input type="text" list="subcategory-datalist" class="form-input" id="ai-subcategory-input" placeholder="e.g. Algorithms (optional)">
+              <select id="ai-subcategory-select" class="form-input ai-combo-select" title="Select previously used subcategory from Google Drive">
+                <option value="">▼ Select existing subcategory...</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 3. Cards to Generate Line -->
+          <div class="form-group ai-form-line">
+            <label class="form-label" for="ai-card-count">🎯 Cards to Generate</label>
+            <select class="form-input" id="ai-card-count">
+              <option value="auto" selected>🤖 Auto (AI Decides)</option>
+              <option value="5">5 Cards</option>
+              <option value="10">10 Cards</option>
+              <option value="15">15 Cards</option>
+              <option value="25">25 Cards</option>
+              <option value="50">50 Cards</option>
+            </select>
+          </div>
+
+          <!-- 4. Custom Tags Line -->
+          <div class="form-group ai-form-line">
+            <label class="form-label" for="ai-custom-tags">🏷️ Custom Tags (comma-separated)</label>
+            <input type="text" list="tags-datalist" class="form-input" id="ai-custom-tags" placeholder="e.g. shortcuts, revision, algorithms">
+            <div class="ai-tag-helper-row">
+              <select id="ai-tag-select" class="form-input" style="flex: 1; min-width: 200px; font-size: 0.85rem; cursor: pointer;">
+                <option value="">-- Choose previously used tag from Drive --</option>
+              </select>
+              <button type="button" class="btn-primary" id="btn-add-tag" style="padding: 0.65rem 1.25rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;">
+                <span>➕ Add Tag</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <input type="hidden" id="ai-doc-id-input" value="">
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+            <label class="form-label" for="ai-source-text" style="margin-bottom: 0; font-size: 0.95rem; font-weight: 700;">
+              Source Text / Educational Notes
+            </label>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span id="ai-loaded-doc-badge" style="display: none; font-size: 0.8rem; background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid rgba(6, 182, 212, 0.3); font-weight: 600;"></span>
+              <label class="btn-primary" style="cursor: pointer; font-size: 0.85rem; padding: 0.5rem 1.1rem; display: inline-flex; align-items: center; gap: 0.45rem; background: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%); box-shadow: 0 4px 12px rgba(6, 182, 212, 0.35);">
+                <span style="font-size: 1.1rem;">📁</span>
+                <span>Upload Document (.txt, .md)</span>
+                <input type="file" id="ai-doc-file-input" accept=".txt,.md,.text" style="display: none;">
+              </label>
+            </div>
+          </div>
+          <textarea class="generator-textarea" id="ai-source-text" placeholder="Paste your study notes or text here (or drag and drop a .txt / .md file)...&#10;&#10;Example:&#10;Consensus algorithms ensure a distributed cluster agrees on state even in the presence of node failures. Raft divides time into terms and elects a leader via majority heartbeats..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button class="btn-primary" id="btn-run-generate">
+            <span id="btn-generate-spinner" style="display: none;" class="spinner">⏳</span>
+            <span id="btn-generate-text">✨ Generate Flashcards</span>
+          </button>
+        </div>
+
+        <!-- Generated Draft Cards Preview -->
+        <div class="draft-cards-area" id="draft-cards-area" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 1.1rem; font-weight: 700;">Review Draft Cards Before Saving</h3>
+            <button class="btn-primary" id="btn-add-selected-drafts">
+              <span>💾 Add Selected to Master Deck</span>
+            </button>
+          </div>
+          <div id="draft-cards-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 4: SETTINGS & GOOGLE DRIVE CLOUD SYNC
+         ====================================================================== -->
+    <section class="tab-content" id="tab-settings">
+      <div class="generator-container" style="max-width: 720px; margin: 0 auto;">
+        <h2>⚙️ Cloud Sync & Configuration</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          Connect to Google Drive for automated cross-device sync between your PC and mobile phones, or configure your Gemini API Key.
+        </p>
+
+        <!-- Google Drive Section -->
+        <div style="background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--bg-card-border); display: flex; flex-direction: column; gap: 0.85rem;">
+          <h3 style="font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📁 Google Drive Cloud Sync</span>
+          </h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">
+            Syncs <code>my_deck.json</code> with your personal Google Drive account. Requires an OAuth 2.0 Web Client ID.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="settings-google-client-id">Google OAuth 2.0 Web Client ID</label>
+            <input type="text" class="form-input" id="settings-google-client-id" placeholder="e.g. 123456789-xyz.apps.googleusercontent.com">
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn-primary" id="btn-google-signin-tab">
+              <span>🔑 Sign in with Google</span>
+            </button>
+            <button class="btn-secondary" id="btn-sync-drive-tab">
+              <span>🔄 Sync Now</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Gemini API Section -->
+        <div style="background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--bg-card-border); display: flex; flex-direction: column; gap: 0.85rem;">
+          <h3 style="font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🤖 Google Gemini API Key</span>
+          </h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">
+            Stored securely in your personal browser's <code>localStorage</code>. Never shared or sent to any third-party server.
+          </p>
+          <div class="form-group">
+            <label class="form-label" for="settings-gemini-key">Gemini API Key</label>
+            <input type="password" class="form-input" id="settings-gemini-key" placeholder="AIzaSy...">
+          </div>
+        </div>
+
+        <!-- Manual Backup / Restore -->
+        <div style="background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--bg-card-border); display: flex; flex-direction: column; gap: 0.85rem;">
+          <h3 style="font-size: 1.05rem;">💾 Local Backup & Restore (JSON)</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">
+            Export or import your <code>my_deck.json</code> file directly to your device storage.
+          </p>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn-secondary" id="btn-export-json-tab">
+              <span>⬇️ Export my_deck.json</span>
+            </button>
+            <label class="btn-secondary" style="cursor: pointer;">
+              <span>⬆️ Import my_deck.json</span>
+              <input type="file" id="file-import-input-tab" accept=".json" style="display: none;">
+            </label>
+            <button class="btn-mini danger" id="btn-reset-deck-tab" style="margin-left: auto;">
+              <span>Reset to Sample Deck</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button class="btn-primary" id="btn-save-settings-tab">
+            <span>💾 Save Settings</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar (Visible on phones) -->
+  <nav class="mobile-nav-bar" aria-label="Mobile Navigation">
+    <button class="mobile-nav-item active" data-tab="study">
+      <span style="font-size: 1.2rem;">🧠</span>
+      <span>Study</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="deck">
+      <span style="font-size: 1.2rem;">📊</span>
+      <span>Deck</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="ai">
+      <span style="font-size: 1.2rem;">🪄</span>
+      <span>AI Gen</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="settings">
+      <span style="font-size: 1.2rem;">⚙️</span>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- Modal: Add/Edit Flashcard -->
+  <div class="modal-backdrop" id="card-modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="card-modal-title">Add New Flashcard</h3>
+        <button class="btn-mini" id="btn-cancel-card-modal">✕</button>
+      </div>
+      <form id="card-form" class="modal-body">
+        <input type="hidden" id="card-edit-id">
+        <div class="form-group">
+          <label class="form-label" for="card-input-question">Question / Prompt *</label>
+          <textarea class="form-input" id="card-input-question" rows="3" required placeholder="What is the CAP Theorem?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="card-input-answer">Reference Answer *</label>
+          <textarea class="form-input" id="card-input-answer" rows="3" required placeholder="It states that a distributed data store can only provide two of..."></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label class="form-label" for="card-input-category">Category</label>
+            <input type="text" list="category-datalist" class="form-input" id="card-input-category" placeholder="e.g. Linux">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="card-input-subcategory">Subcategory</label>
+            <input type="text" list="subcategory-datalist" class="form-input" id="card-input-subcategory" placeholder="e.g. Vi Commands">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="card-input-box">Initial Leitner Box</label>
+          <select class="form-input" id="card-input-box">
+            <option value="1">Box 1 (Daily review - 1 day)</option>
+            <option value="2">Box 2 (Every 3 days)</option>
+            <option value="3">Box 3 (Weekly - 7 days)</option>
+            <option value="4">Box 4 (Bi-weekly - 14 days)</option>
+            <option value="5">Box 5 (Monthly - 30 days)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="card-input-tags">Tags (comma-separated)</label>
+          <input type="text" class="form-input" id="card-input-tags" placeholder="distributed-systems, cap-theorem">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('card-modal-backdrop').classList.remove('open')">Cancel</button>
+          <button type="submit" class="btn-primary">Save Flashcard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Settings & Cloud Sync -->
+  <div class="modal-backdrop" id="settings-modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Settings & Cloud Sync</h3>
+        <button class="btn-mini" id="btn-cancel-settings">✕</button>
+      </div>
+      <form id="settings-form" class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="input-google-client-id">Google OAuth 2.0 Client ID (Web Application)</label>
+          <input type="text" class="form-input" id="input-google-client-id" placeholder="123456789-xyz.apps.googleusercontent.com">
+          <span style="font-size: 0.72rem; color: var(--text-dim);">Required to sync my_deck.json with your Google Drive.</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn-secondary" id="btn-google-signin" style="flex: 1;">
+            <span>🔑 Google Sign-In</span>
+          </button>
+          <button type="button" class="btn-secondary" id="btn-sync-drive-manual" style="flex: 1;">
+            <span>🔄 Sync Deck</span>
+          </button>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--bg-card-border); margin: 0.5rem 0;">
+
+        <div class="form-group">
+          <label class="form-label" for="input-gemini-api-key">Gemini API Key (Optional for AI generation)</label>
+          <input type="password" class="form-input" id="input-gemini-api-key" placeholder="AIzaSy...">
+          <span style="font-size: 0.72rem; color: var(--text-dim);">Stored locally in your browser. Leave blank for built-in offline tutor.</span>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--bg-card-border); margin: 0.5rem 0;">
+
+        <div style="display: flex; gap: 0.5rem; justify-content: space-between;">
+          <button type="button" class="btn-secondary" id="btn-export-json">⬇️ Export JSON</button>
+          <label class="btn-secondary" style="cursor: pointer;">
+            <span>⬆️ Import JSON</span>
+            <input type="file" id="file-import-input" accept=".json" style="display: none;">
+          </label>
+          <button type="button" class="btn-mini danger" id="btn-reset-deck">Reset Deck</button>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('settings-modal-backdrop').classList.remove('open')">Close</button>
+          <button type="submit" class="btn-primary">Save Settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Main ES Module Script -->
+  <script type="module" src="./js/app.js?v=17"></script>
+
+  <!-- Connect Tab Settings with Modal elements -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Sync tab settings inputs with modal inputs
+      const syncInputs = (src, dest) => {
+        if (!src || !dest) return;
+        src.addEventListener('input', () => { dest.value = src.value; });
+        dest.addEventListener('input', () => { src.value = dest.value; });
+      };
+      syncInputs(document.getElementById('settings-google-client-id'), document.getElementById('input-google-client-id'));
+      syncInputs(document.getElementById('settings-gemini-key'), document.getElementById('input-gemini-api-key'));
+
+      // Tab settings buttons
+      document.getElementById('btn-google-signin-tab')?.addEventListener('click', () => {
+        document.getElementById('btn-google-signin')?.click();
+      });
+      document.getElementById('btn-sync-drive-tab')?.addEventListener('click', () => {
+        document.getElementById('btn-sync-drive-manual')?.click();
+      });
+      document.getElementById('btn-export-json-tab')?.addEventListener('click', () => {
+        document.getElementById('btn-export-json')?.click();
+      });
+      document.getElementById('btn-reset-deck-tab')?.addEventListener('click', () => {
+        document.getElementById('btn-reset-deck')?.click();
+      });
+      document.getElementById('btn-save-settings-tab')?.addEventListener('click', () => {
+        document.getElementById('settings-form')?.requestSubmit();
+      });
+      document.getElementById('file-import-input-tab')?.addEventListener('change', (e) => {
+        const modalInput = document.getElementById('file-import-input');
+        if (modalInput) {
+          modalInput.files = e.target.files;
+          modalInput.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+  </script>
+
+  <!-- Dynamic Category, Subcategory & Tag Datalists -->
+  <datalist id="category-datalist"></datalist>
+  <datalist id="subcategory-datalist"></datalist>
+  <datalist id="tags-datalist"></datalist>
+
+  <!-- Modal: Manage Categories, Subcategories & Batch Delete -->
+  <div class="modal-backdrop" id="batch-delete-modal-backdrop">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">🗂️ Manage & Batch Delete Cards</h3>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Remove cards in bulk by Category, Subcategory, or Tag.
+          </p>
+        </div>
+        <button class="btn-mini" id="btn-close-batch-modal">✕</button>
+      </div>
+      
+      <div class="batch-delete-tabs">
+        <button class="batch-tab-btn active" data-batch-tab="category">📁 By Category</button>
+        <button class="batch-tab-btn" data-batch-tab="subcategory">📂 By Subcategory</button>
+        <button class="batch-tab-btn" data-batch-tab="tag">🏷️ By Tag</button>
+      </div>
+
+      <div style="max-height: 380px; overflow-y: auto; padding-right: 0.35rem;">
+        <!-- Category View -->
+        <div id="batch-list-category" class="batch-tab-view"></div>
+        
+        <!-- Subcategory View -->
+        <div id="batch-list-subcategory" class="batch-tab-view" style="display: none;"></div>
+        
+        <!-- Tag View -->
+        <div id="batch-list-tag" class="batch-tab-view" style="display: none;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btn-done-batch-modal">Done</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

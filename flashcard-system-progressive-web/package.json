@@ -1,0 +1,13 @@
+{
+  "name": "flashcard-system-progressive-web",
+  "version": "1.0.0",
+  "description": "Progressive Web App for Leitner Flashcard Study with Google Drive Cloud Sync & Gemini AI",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -p 3000",
+    "dev": "npx serve . -p 3000"
+  },
+  "keywords": ["pwa", "flashcards", "leitner", "spaced-repetition", "google-drive", "gemini-ai"],
+  "author": "Polyglot Team",
+  "license": "MIT"
+}
