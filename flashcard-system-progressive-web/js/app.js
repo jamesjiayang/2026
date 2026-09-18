@@ -73,7 +73,9 @@ const state = {
   driveFileId: null,
   deckViewLevel: 'categories', // 'categories' | 'subcategories' | 'cards'
   selectedCategory: null,
-  selectedSubcategory: null
+  selectedSubcategory: null,
+  studyCategory: 'all',
+  studySubcategory: 'all'
 };
 
 // DOM Element References
@@ -90,6 +92,8 @@ const elements = {
   statTotalCards: document.getElementById('stat-total-cards'),
   statDueCards: document.getElementById('stat-due-cards'),
   statMastery: document.getElementById('stat-mastery'),
+  leitnerScopeBadge: document.getElementById('leitner-scope-badge'),
+  btnLeitnerClearScope: document.getElementById('btn-leitner-clear-scope'),
   meterFills: {
     1: document.getElementById('meter-fill-1'),
     2: document.getElementById('meter-fill-2'),
@@ -105,7 +109,16 @@ const elements = {
     5: document.getElementById('meter-count-5')
   },
 
-  // Study View
+  // Study View & Scope
+  studyScopeBar: document.getElementById('study-scope-bar'),
+  studyCategorySelect: document.getElementById('study-category-select'),
+  studySubcategorySelect: document.getElementById('study-subcategory-select'),
+  btnStudyScopeReset: document.getElementById('btn-study-scope-reset'),
+  studyScopeDueCount: document.getElementById('study-scope-due-count'),
+  emptyDueTitle: document.getElementById('empty-due-title'),
+  emptyDueDesc: document.getElementById('empty-due-desc'),
+  btnStudyAllLabel: document.getElementById('btn-study-all-label'),
+  btnStudyResetScope: document.getElementById('btn-study-reset-scope'),
   studyViewport: document.getElementById('study-viewport'),
   emptyDueCard: document.getElementById('empty-due-card'),
   studyCounter: document.getElementById('study-counter'),
@@ -189,7 +202,128 @@ const elements = {
   toastContainer: document.getElementById('toast-container')
 };
 
-// Initialize Application
+// ---------------------------------------------------------------------------
+// TAB NAVIGATION
+// ---------------------------------------------------------------------------
+function switchTab(targetTab) {
+  state.activeTab = targetTab;
+  elements.navTabs.forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tab === targetTab);
+  });
+  elements.mobileNavItems.forEach(item => {
+    item.classList.toggle('active', item.dataset.tab === targetTab);
+  });
+  elements.tabContents.forEach(content => {
+    content.classList.toggle('active', content.id === `tab-${targetTab}`);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// STUDY SCOPE SELECTION & REPETITION PRIORITY
+// ---------------------------------------------------------------------------
+function updateStudyScopeSelectors() {
+  if (!elements.studyCategorySelect) return;
+
+  const categories = getUniqueCategories(state.deck);
+  const today = getTodayStr();
+
+  // Due counts per category
+  const catDueCounts = {};
+  (state.deck.cards || []).forEach(c => {
+    const cat = (c.category || 'General').trim();
+    if (isCardDue(c, today)) {
+      catDueCounts[cat] = (catDueCounts[cat] || 0) + 1;
+    }
+  });
+
+  const totalDeckCards = (state.deck.cards || []).length;
+  const totalDeckDue = (state.deck.cards || []).filter(c => isCardDue(c, today)).length;
+
+  // 1. Populate Study Category Dropdown
+  const catOptions = [
+    `<option value="all">📁 All Categories (${totalDeckCards} cards, ${totalDeckDue} due)</option>`
+  ];
+  categories.forEach(cat => {
+    const due = catDueCounts[cat.name] || 0;
+    catOptions.push(
+      `<option value="${escapeHtml(cat.name)}">📁 ${escapeHtml(cat.name)} (${cat.count} cards, ${due} due)</option>`
+    );
+  });
+  elements.studyCategorySelect.innerHTML = catOptions.join('');
+
+  // Validate current studyCategory
+  if (state.studyCategory !== 'all' && !categories.some(c => c.name.toLowerCase() === state.studyCategory.toLowerCase())) {
+    state.studyCategory = 'all';
+    state.studySubcategory = 'all';
+  }
+  elements.studyCategorySelect.value = state.studyCategory;
+
+  // 2. Populate Study Subcategory Dropdown
+  if (elements.studySubcategorySelect) {
+    if (state.studyCategory === 'all') {
+      elements.studySubcategorySelect.innerHTML = '<option value="all">📂 All Subcategories</option>';
+      elements.studySubcategorySelect.value = 'all';
+      elements.studySubcategorySelect.disabled = true;
+      state.studySubcategory = 'all';
+    } else {
+      elements.studySubcategorySelect.disabled = false;
+      const subcategories = getUniqueSubcategories(state.deck, state.studyCategory);
+
+      // Subcategory due counts
+      const subDueCounts = {};
+      (state.deck.cards || []).forEach(c => {
+        const catMatch = (c.category || 'General').trim().toLowerCase() === state.studyCategory.toLowerCase();
+        if (catMatch && isCardDue(c, today)) {
+          const sub = (c.subcategory || 'General').trim();
+          subDueCounts[sub] = (subDueCounts[sub] || 0) + 1;
+        }
+      });
+
+      const catTotal = (state.deck.cards || []).filter(c => (c.category || 'General').trim().toLowerCase() === state.studyCategory.toLowerCase()).length;
+      const catDue = catDueCounts[state.studyCategory] || 0;
+
+      const subOptions = [
+        `<option value="all">📂 All Subcategories (${catTotal} cards, ${catDue} due)</option>`
+      ];
+      subcategories.forEach(sub => {
+        const due = subDueCounts[sub.subcategory] || 0;
+        subOptions.push(
+          `<option value="${escapeHtml(sub.subcategory)}">📂 ${escapeHtml(sub.subcategory)} (${sub.count} cards, ${due} due)</option>`
+        );
+      });
+      elements.studySubcategorySelect.innerHTML = subOptions.join('');
+
+      // Validate state.studySubcategory
+      if (state.studySubcategory !== 'all' && !subcategories.some(s => s.subcategory.toLowerCase() === state.studySubcategory.toLowerCase())) {
+        state.studySubcategory = 'all';
+      }
+      elements.studySubcategorySelect.value = state.studySubcategory;
+    }
+  }
+
+  // 3. Reset Button Visibility
+  if (elements.btnStudyScopeReset) {
+    elements.btnStudyScopeReset.style.display = (state.studyCategory !== 'all' || state.studySubcategory !== 'all') ? 'inline-flex' : 'none';
+  }
+}
+
+function setStudyScope(category = 'all', subcategory = 'all', switchToStudyTab = false) {
+  state.studyCategory = category || 'all';
+  state.studySubcategory = subcategory || 'all';
+
+  updateStudyScopeSelectors();
+  refreshDueQueue();
+  updateLeitnerDashboard();
+  renderStudyView();
+
+  if (switchToStudyTab) {
+    switchTab('study');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const catLabel = state.studyCategory === 'all' ? 'All Categories' : state.studyCategory;
+    const subLabel = state.studySubcategory === 'all' ? '' : ` › ${state.studySubcategory}`;
+    showToast(`Studying: ${catLabel}${subLabel} (${state.dueQueue.length} cards due)`, 'info');
+  }
+}
 
 // ---------------------------------------------------------------------------
 // CATEGORIES & SUBCATEGORIES MANAGEMENT
@@ -238,6 +372,9 @@ function updateCategoryDatalistsAndFilters() {
 
   // Also refresh comboboxes (Category, Subcategory, Tags)
   populateComboboxes();
+
+  // Refresh study scope selectors
+  updateStudyScopeSelectors();
 }
 
 function populateComboboxes(vocab = null) {
@@ -459,6 +596,7 @@ function renderBatchDeleteLists() {
 
 function onDeckStructureModified() {
   updateCategoryDatalistsAndFilters();
+  updateStudyScopeSelectors();
   refreshDueQueue();
   updateLeitnerDashboard();
   renderDeckGrid();
@@ -468,6 +606,7 @@ function onDeckStructureModified() {
 
 export function init() {
   applyTheme(state.settings.theme || 'dark');
+  updateStudyScopeSelectors();
   refreshDueQueue();
   updateLeitnerDashboard();
   renderStudyView();
@@ -504,7 +643,7 @@ function registerServiceWorker() {
 // LEITNER DASHBOARD
 // ---------------------------------------------------------------------------
 function updateLeitnerDashboard() {
-  const stats = getDeckStatistics(state.deck);
+  const stats = getDeckStatistics(state.deck, getTodayStr(), state.studyCategory, state.studySubcategory);
   if (elements.statTotalCards) elements.statTotalCards.textContent = stats.totalCards;
   if (elements.statDueCards) elements.statDueCards.textContent = stats.dueCount;
   if (elements.statMastery) elements.statMastery.textContent = `${stats.masteryPercentage}%`;
@@ -520,19 +659,50 @@ function updateLeitnerDashboard() {
     }
   }
 
-  // Update tab badge
+  // Update Leitner Repetition Priority Scope Badge
+  if (elements.leitnerScopeBadge) {
+    const isFiltered = state.studyCategory && state.studyCategory !== 'all';
+    if (!isFiltered) {
+      elements.leitnerScopeBadge.textContent = '📚 All Categories';
+      if (elements.btnLeitnerClearScope) elements.btnLeitnerClearScope.style.display = 'none';
+    } else {
+      const hasSub = state.studySubcategory && state.studySubcategory !== 'all';
+      elements.leitnerScopeBadge.textContent = hasSub
+        ? `📁 ${state.studyCategory} › 📂 ${state.studySubcategory}`
+        : `📁 ${state.studyCategory}`;
+      if (elements.btnLeitnerClearScope) elements.btnLeitnerClearScope.style.display = 'inline-block';
+    }
+  }
+
+  // Update tab badge with active study scope due count
   const dueTabBadge = document.getElementById('study-tab-badge');
   if (dueTabBadge) {
     dueTabBadge.textContent = stats.dueCount;
     dueTabBadge.style.display = stats.dueCount > 0 ? 'inline-block' : 'none';
   }
+
+  // Update study scope stats pill
+  if (elements.studyScopeDueCount) {
+    elements.studyScopeDueCount.textContent = stats.dueCount;
+  }
 }
 
 function refreshDueQueue(forceAll = false) {
+  const cat = state.studyCategory;
+  const sub = state.studySubcategory;
   if (forceAll) {
-    state.dueQueue = [...state.deck.cards];
+    let cards = (state.deck && Array.isArray(state.deck.cards)) ? state.deck.cards : [];
+    if (cat && cat !== 'all') {
+      const catTarget = cat.trim().toLowerCase();
+      cards = cards.filter(c => (c.category || 'General').trim().toLowerCase() === catTarget);
+      if (sub && sub !== 'all') {
+        const subTarget = sub.trim().toLowerCase();
+        cards = cards.filter(c => (c.subcategory || 'General').trim().toLowerCase() === subTarget);
+      }
+    }
+    state.dueQueue = [...cards];
   } else {
-    state.dueQueue = getDueCards(state.deck);
+    state.dueQueue = getDueCards(state.deck, getTodayStr(), cat, sub);
   }
   state.currentIndex = 0;
   state.isFlipped = false;
@@ -544,7 +714,23 @@ function refreshDueQueue(forceAll = false) {
 function renderStudyView() {
   if (state.dueQueue.length === 0) {
     if (elements.studyViewport) elements.studyViewport.style.display = 'none';
-    if (elements.emptyDueCard) elements.emptyDueCard.style.display = 'flex';
+    if (elements.emptyDueCard) {
+      elements.emptyDueCard.style.display = 'flex';
+      const isFiltered = state.studyCategory && state.studyCategory !== 'all';
+      if (isFiltered) {
+        const hasSub = state.studySubcategory && state.studySubcategory !== 'all';
+        const scopeName = hasSub ? `${state.studyCategory} › ${state.studySubcategory}` : state.studyCategory;
+        if (elements.emptyDueTitle) elements.emptyDueTitle.textContent = `Caught Up in ${scopeName}!`;
+        if (elements.emptyDueDesc) elements.emptyDueDesc.textContent = `All flashcards due today in "${scopeName}" have been successfully reviewed.`;
+        if (elements.btnStudyAllLabel) elements.btnStudyAllLabel.textContent = `📚 Review All Cards in ${hasSub ? state.studySubcategory : state.studyCategory} Anyway`;
+        if (elements.btnStudyResetScope) elements.btnStudyResetScope.style.display = 'inline-flex';
+      } else {
+        if (elements.emptyDueTitle) elements.emptyDueTitle.textContent = "You're All Caught Up!";
+        if (elements.emptyDueDesc) elements.emptyDueDesc.textContent = 'All flashcards due today have been successfully reviewed. You can generate new cards with AI, or start an extra practice session.';
+        if (elements.btnStudyAllLabel) elements.btnStudyAllLabel.textContent = '📚 Review All Cards Anyway';
+        if (elements.btnStudyResetScope) elements.btnStudyResetScope.style.display = 'none';
+      }
+    }
     return;
   }
 
@@ -967,9 +1153,14 @@ function renderCategoriesView() {
       </div>
       <div class="folder-card-footer">
         <span class="folder-action-hint">Explore Subcategories &rarr;</span>
-        <button type="button" class="btn-delete-folder" data-category="${escapeHtml(cat.name)}" title="Delete all cards under category ${escapeHtml(cat.name)}">
-          🗑️ Delete
-        </button>
+        <div class="folder-actions-right">
+          <button type="button" class="btn-study-folder" data-category="${escapeHtml(cat.name)}" title="Study all cards in category ${escapeHtml(cat.name)}">
+            <span>🧠 Study</span>
+          </button>
+          <button type="button" class="btn-delete-folder" data-category="${escapeHtml(cat.name)}" title="Delete all cards under category ${escapeHtml(cat.name)}">
+            🗑️ Delete
+          </button>
+        </div>
       </div>
     `;
 
@@ -981,6 +1172,13 @@ function renderCategoriesView() {
       state.searchQuery = '';
       if (elements.deckSearchInput) elements.deckSearchInput.value = '';
       renderDeckManager();
+    });
+
+    // Clicking study button starts study session for this category
+    const studyBtn = cardEl.querySelector('.btn-study-folder');
+    studyBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setStudyScope(cat.name, 'all', true);
     });
 
     // Clicking delete button only triggers category deletion
@@ -1074,9 +1272,14 @@ function renderSubcategoriesView() {
       </div>
       <div class="folder-card-footer">
         <span class="folder-action-hint">View Flashcards &rarr;</span>
-        <button type="button" class="btn-delete-folder" data-subcategory="${escapeHtml(sub.name)}" title="Delete all cards under subcategory ${escapeHtml(sub.name)}">
-          🗑️ Delete
-        </button>
+        <div class="folder-actions-right">
+          <button type="button" class="btn-study-folder" data-subcategory="${escapeHtml(sub.name)}" title="Study cards in subcategory ${escapeHtml(sub.name)}">
+            <span>🧠 Study</span>
+          </button>
+          <button type="button" class="btn-delete-folder" data-subcategory="${escapeHtml(sub.name)}" title="Delete all cards under subcategory ${escapeHtml(sub.name)}">
+            🗑️ Delete
+          </button>
+        </div>
       </div>
     `;
 
@@ -1087,6 +1290,13 @@ function renderSubcategoriesView() {
       state.searchQuery = '';
       if (elements.deckSearchInput) elements.deckSearchInput.value = '';
       renderDeckManager();
+    });
+
+    // Clicking study button starts study session for this subcategory
+    const studyBtn = cardEl.querySelector('.btn-study-folder');
+    studyBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setStudyScope(currentCat, sub.name, true);
     });
 
     // Clicking delete button only triggers subcategory deletion
@@ -1137,10 +1347,16 @@ function renderCardsView() {
   if (elements.deckLevelStats) {
     elements.deckLevelStats.innerHTML = `
       <span class="deck-stat-pill">🎴 ${cards.length} / ${totalInSubcategory} Cards</span>
+      <button type="button" class="btn-study-current-sub" id="btn-study-current-sub" title="Study cards in this subcategory">
+        <span>🧠 Study Subcategory</span>
+      </button>
       <button type="button" class="btn-delete-folder" id="btn-delete-current-sub" style="padding: 0.3rem 0.65rem;" title="Delete all cards in this subcategory">
         🗑️ Delete Subcategory
       </button>
     `;
+    document.getElementById('btn-study-current-sub')?.addEventListener('click', () => {
+      setStudyScope(currentCat, currentSub, true);
+    });
     document.getElementById('btn-delete-current-sub')?.addEventListener('click', () => {
       handleDeleteSubcategory(currentCat, currentSub, totalInSubcategory);
     });
@@ -1711,24 +1927,35 @@ function escapeHtml(str) {
 // ---------------------------------------------------------------------------
 function setupEventListeners() {
   // Navigation Tabs (Desktop & Mobile)
-  const switchTab = (targetTab) => {
-    state.activeTab = targetTab;
-    elements.navTabs.forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.tab === targetTab);
-    });
-    elements.mobileNavItems.forEach(item => {
-      item.classList.toggle('active', item.dataset.tab === targetTab);
-    });
-    elements.tabContents.forEach(content => {
-      content.classList.toggle('active', content.id === `tab-${targetTab}`);
-    });
-  };
-
   elements.navTabs.forEach(tab => {
     tab.addEventListener('click', () => switchTab(tab.dataset.tab));
   });
   elements.mobileNavItems.forEach(item => {
     item.addEventListener('click', () => switchTab(item.dataset.tab));
+  });
+
+  // Study Scope Selectors & Reset Buttons
+  elements.studyCategorySelect?.addEventListener('change', (e) => {
+    setStudyScope(e.target.value, 'all', false);
+  });
+
+  elements.studySubcategorySelect?.addEventListener('change', (e) => {
+    setStudyScope(state.studyCategory, e.target.value, false);
+  });
+
+  elements.btnStudyScopeReset?.addEventListener('click', () => {
+    setStudyScope('all', 'all', false);
+    showToast('Reset study focus to all categories.', 'info');
+  });
+
+  elements.btnLeitnerClearScope?.addEventListener('click', () => {
+    setStudyScope('all', 'all', false);
+    showToast('Reset repetition priority scope to all categories.', 'info');
+  });
+
+  elements.btnStudyResetScope?.addEventListener('click', () => {
+    setStudyScope('all', 'all', false);
+    showToast('Switched to all categories.', 'info');
   });
 
   // Theme Toggle
@@ -1781,7 +2008,10 @@ function setupEventListeners() {
   elements.btnStudyAll?.addEventListener('click', () => {
     refreshDueQueue(true);
     renderStudyView();
-    showToast('Starting comprehensive review of all cards!', 'info');
+    const isFiltered = state.studyCategory && state.studyCategory !== 'all';
+    const hasSub = state.studySubcategory && state.studySubcategory !== 'all';
+    const scopeName = hasSub ? `${state.studyCategory} › ${state.studySubcategory}` : state.studyCategory;
+    showToast(isFiltered ? `Starting practice review of all cards in ${scopeName}!` : 'Starting comprehensive review of all cards!', 'info');
   });
 
   elements.btnAiEvaluate?.addEventListener('click', handleAiEvaluate);

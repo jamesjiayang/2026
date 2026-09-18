@@ -39,9 +39,18 @@ export function isCardDue(card, todayStr = getTodayStr()) {
   return card.next_review_date <= todayStr;
 }
 
-export function getDueCards(deck, todayStr = getTodayStr()) {
+export function getDueCards(deck, todayStr = getTodayStr(), category = null, subcategory = null) {
   if (!deck || !Array.isArray(deck.cards)) return [];
-  return deck.cards.filter(c => isCardDue(c, todayStr));
+  let cards = deck.cards;
+  if (category && category !== 'all') {
+    const catTarget = category.trim().toLowerCase();
+    cards = cards.filter(c => (c.category || 'General').trim().toLowerCase() === catTarget);
+    if (subcategory && subcategory !== 'all') {
+      const subTarget = subcategory.trim().toLowerCase();
+      cards = cards.filter(c => (c.subcategory || 'General').trim().toLowerCase() === subTarget);
+    }
+  }
+  return cards.filter(c => isCardDue(c, todayStr));
 }
 
 export function advanceCard(card, todayStr = getTodayStr()) {
@@ -66,8 +75,16 @@ export function resetCard(card, todayStr = getTodayStr()) {
   };
 }
 
-export function getDeckStatistics(deck, todayStr = getTodayStr()) {
-  const cards = (deck && Array.isArray(deck.cards)) ? deck.cards : [];
+export function getDeckStatistics(deck, todayStr = getTodayStr(), category = null, subcategory = null) {
+  let cards = (deck && Array.isArray(deck.cards)) ? deck.cards : [];
+  if (category && category !== 'all') {
+    const catTarget = category.trim().toLowerCase();
+    cards = cards.filter(c => (c.category || 'General').trim().toLowerCase() === catTarget);
+    if (subcategory && subcategory !== 'all') {
+      const subTarget = subcategory.trim().toLowerCase();
+      cards = cards.filter(c => (c.subcategory || 'General').trim().toLowerCase() === subTarget);
+    }
+  }
   const totalCards = cards.length;
   let dueCount = 0;
   const boxCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };

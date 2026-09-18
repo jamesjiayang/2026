@@ -92,6 +92,13 @@
         </div>
       </div>
 
+      <!-- Leitner Repetition Priority Scope Badge -->
+      <div class="leitner-scope-indicator" id="leitner-scope-indicator">
+        <span class="scope-label">Priority Scope:</span>
+        <span class="scope-badge" id="leitner-scope-badge">📚 All Categories</span>
+        <button type="button" class="scope-clear-btn" id="btn-leitner-clear-scope" style="display: none;" title="Reset scope to All Categories">✕ All</button>
+      </div>
+
       <!-- Leitner 5-Box Distribution Meter -->
       <div class="leitner-boxes-meter">
         <div class="meter-box box-1" title="Box 1: Daily review (1 day)">
@@ -126,6 +133,35 @@
          TAB 1: STUDY SESSION VIEW
          ====================================================================== -->
     <section class="tab-content active" id="tab-study">
+
+      <!-- Study Scope Selection Bar (Category & Subcategory Picker) -->
+      <div class="study-scope-bar" id="study-scope-bar">
+        <div class="scope-title-area">
+          <span class="scope-title-icon">🎯</span>
+          <span class="scope-title-text">Study Focus</span>
+        </div>
+        <div class="scope-dropdowns-group">
+          <div class="scope-select-wrap">
+            <label class="scope-input-label" for="study-category-select">Category</label>
+            <select class="scope-select" id="study-category-select" title="Choose category to study">
+              <option value="all">📁 All Categories (Whole Deck)</option>
+            </select>
+          </div>
+          <div class="scope-select-wrap">
+            <label class="scope-input-label" for="study-subcategory-select">Subcategory</label>
+            <select class="scope-select" id="study-subcategory-select" title="Choose subcategory to study">
+              <option value="all">📂 All Subcategories</option>
+            </select>
+          </div>
+          <button type="button" class="btn-scope-reset" id="btn-study-scope-reset" style="display: none;" title="Reset to study whole deck">
+            <span>✕ All</span>
+          </button>
+        </div>
+        <div class="scope-stats-pill" id="study-scope-stats">
+          <span id="study-scope-due-count">0</span> due
+        </div>
+      </div>
+
       <div class="study-viewport" id="study-viewport">
         
         <!-- Study Progress Header -->
@@ -244,13 +280,18 @@
       <!-- Empty State when no cards are due -->
       <div class="empty-due-card" id="empty-due-card" style="display: none;">
         <span class="empty-icon">🎉</span>
-        <h2 style="font-size: 1.5rem; font-weight: 700;">You're All Caught Up!</h2>
-        <p style="color: var(--text-muted); max-width: 420px;">
+        <h2 style="font-size: 1.5rem; font-weight: 700;" id="empty-due-title">You're All Caught Up!</h2>
+        <p style="color: var(--text-muted); max-width: 440px;" id="empty-due-desc">
           All flashcards due today have been successfully reviewed. You can generate new cards with AI, or start an extra practice session.
         </p>
-        <button class="btn-primary" id="btn-study-all" style="margin-top: 0.5rem;">
-          <span>📚 Review All Cards Anyway</span>
-        </button>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem;">
+          <button class="btn-primary" id="btn-study-all">
+            <span id="btn-study-all-label">📚 Review All Cards Anyway</span>
+          </button>
+          <button class="btn-secondary" id="btn-study-reset-scope" style="display: none;">
+            <span>🌐 Switch to All Categories</span>
+          </button>
+        </div>
       </div>
     </section>
 
